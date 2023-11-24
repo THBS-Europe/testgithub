@@ -1,5 +1,5 @@
 ---
-environmentSpec: Dev
+environmentSpec: QA
 type: Product
 authMethod: none
 product:
@@ -10,9 +10,9 @@ allowedOrigins:
   origins: test
   creds: "false"
   methods: "get,post"
-  allowHeaders: test2
-  exposeHeaders: details
-  maxSeconds: sd
+  allowHeaders: test
+  exposeHeaders: test
+  maxSeconds: test
   crossoriginpolicyapply: api
 schemes: []
 routes: []
