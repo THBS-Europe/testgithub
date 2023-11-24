@@ -2,20 +2,17 @@
 environmentSpec: Dev
 type: Product
 authMethod: none
-responseCache:
-  timeDuration: 234
-  cachepolicy: api
 product:
   productName: prod2
   apiList: "cc-transformer-api,asset-management"
-  subscriptionname: sub2
+  subscriptionname: Sub2
 allowedOrigins:
   origins: test
   creds: "false"
   methods: "get,post"
-  allowHeaders: test
-  exposeHeaders: test
-  maxSeconds: 230423049
-  crossoriginpolicyapply: product
+  allowHeaders: test2
+  exposeHeaders: details
+  maxSeconds: sd
+  crossoriginpolicyapply: api
 schemes: []
 routes: []
