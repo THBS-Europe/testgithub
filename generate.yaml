@@ -2,39 +2,11 @@
 environmentSpec: QA
 type: Product
 authMethod: none
-filterIp:
-  allowip: 1.1.1.1
-  filterpolicy: api
-azureRateLimit:
-  noOfCalls: 2
-  renewalPeriod: 10
-  ratepolicy: api
-  counter: ip-address
 responseCache:
   timeDuration: 200
   cachepolicy: api
 product:
   productName: prod2
-  apiList: "cc-transformer-api,asset-management,cloud-dictionaries"
-validateJWT:
-  headerName: test
-  failedStatusCode: 404
-  failedStatusMessage: test
-  openIdURL: weqwe
-  requiredClaims:
-    name: ""
-    match: ""
-  jwtpolicy: api
-corelation:
-  correlationId: "true"
-  correlationpolicy: product
-allowedOrigins:
-  origins: asd
-  creds: "false"
-  methods: "GET,POST"
-  allowHeaders: asd
-  exposeHeaders: asd
-  maxSeconds: asd
-  crossoriginpolicyapply: product
+  apiList: "cc-transformer-api,asset-management"
 schemes: []
 routes: []
