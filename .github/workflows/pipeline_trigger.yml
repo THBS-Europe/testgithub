@@ -1,11 +1,15 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - 'master'
-      
   workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Repo-Name'
+        required: true
+      envspec:
+        description: 'Env-Name'
+        required: true
+
 
 jobs:  
   build:
@@ -14,35 +18,29 @@ jobs:
 
     # Steps - a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Use Data from workflow
+        run: |
+          echo "REPO_NAME=${{ github.event.inputs.repo }}" >> $GITHUB_ENV
+          echo "ENV_SPEC=${{ github.event.inputs.envspec }}" >> $GITHUB_ENV
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          repository: 'THBS-Europe/${{ env.REPO_NAME }}'
+          token: ${{ secrets.ORG_ADMIN_TOKEN }}
              
       - name: Use the value
-        env:
-              REPO_NAME: ${{ github.event.repository.name }}
         run: |
             ls -ltr
             echo "We are defining project name"
             echo "CI_PROJECT_NAME=${{ env.REPO_NAME }}" >> $GITHUB_ENV
-            echo "ENV_SPEC=$(yq eval '.environmentSpec' generate.yaml)" >> $GITHUB_ENV
-            
-      - name: Set environment variables conditionally
-        run: |
-            if [[ "${{ env.ENV_SPEC }}" == "Dev" ]]; then
-              echo "AZURE_SUBSCRIPTION_ID=53feb616-2b59-407d-be97-b2797bc3d0f5" >> $GITHUB_ENV
-              echo "AZURE_GROUP_NAME=etpxapim-rg" >> $GITHUB_ENV
-              echo "AZURE_API_SERVICE_NAME=thbs-apim-2" >> $GITHUB_ENV
-            elif [[ "${{ env.ENV_SPEC }}" == "QA" ]]; then
-              echo "AZURE_SUBSCRIPTION_ID=53feb616-2b59-407d-be97-b2797bc3d0f5" >> $GITHUB_ENV
-              echo "AZURE_GROUP_NAME=etpxapim-rg" >> $GITHUB_ENV
-              echo "AZURE_API_SERVICE_NAME=thbs-restore" >> $GITHUB_ENV
-            fi
+            echo "AZURE_SUBSCRIPTION_ID=${{ vars.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
 
       # Runs a set of commands using the runners shell
       - name: Shell_script
         env:
-           AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
-           AZURE_GROUP_NAME: ${{ env.AZURE_GROUP_NAME }}
-           AZURE_API_SERVICE_NAME: ${{ env.AZURE_API_SERVICE_NAME }}
+           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+           AZURE_GROUP_NAME: ${{ vars.AZURE_GROUP_NAME }}
+           AZURE_API_SERVICE_NAME: ${{ vars.AZURE_API_SERVICE_NAME }}
            ENV_SPEC: ${{ env.ENV_SPEC }}
         
         run: |
@@ -95,25 +93,17 @@ jobs:
           export PRODUCTNAME=$(yq -r '.product.productName' generate.yaml)
           export APILIST=$(yq -r '.product.apiList' generate.yaml)
 
-          export FILTER_POLICY=$(yq eval '.filterIp.filterpolicy' generate.yaml)
-          export BACKEND_OAUTH_POLICY=$(yq eval '.backendOauth.oauthpolicy' generate.yaml)
-          export RATE_POLICY=$(yq eval '.azureRateLimit.ratepolicy' generate.yaml)
-          export CACHE_POLICY=$(yq eval '.responseCache.cachepolicy' generate.yaml)
-          export CORRELATION_POLICY=$(yq eval '.corelation.correlationpolicy' generate.yaml)
-          export JWT_POLICY=$(yq -r '.validateJWT.jwtpolicy' generate.yaml)
-
-          export TYPE=$(yq -r '.type' generate.yaml)
-
           
           #az login --service-principal --username ${{ secrets.AZURE_USERNAME }} --password ${{ secrets.AZURE_PASSWORD }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          echo ${{ env.ENV_SPEC }}
-          if [[ "${{ env.ENV_SPEC }}" == "Dev" ]]; then
-            az login --service-principal --username e9fa51dc-d852-4247-8f77-e5b923743cff --password bRq8Q~VZ9gs.J5ufsTMbqr8b4wx5wJeUQ.9Slc68 --tenant 9d68da93-1f22-4f6c-9e91-aa61811bc7b0
+
+          if [[ "${{ env.ENV_SPEC }}" == "PROD" ]]; then
+            az login --service-principal --username ${{ secrets.AZURE_USERNAME_PROD }} --password ${{ secrets.AZURE_PASSWORD_PROD }} --tenant ${{ secrets.AZURE_TENANT_ID_PROD }}
           elif [[ "${{ env.ENV_SPEC }}" == "QA" ]]; then
-            az login --service-principal --username e9fa51dc-d852-4247-8f77-e5b923743cff --password bRq8Q~VZ9gs.J5ufsTMbqr8b4wx5wJeUQ.9Slc68 --tenant 9d68da93-1f22-4f6c-9e91-aa61811bc7b0
+            az login --service-principal --username ${{ secrets.AZURE_USERNAME_QA }} --password ${{ secrets.AZURE_PASSWORD_QA }} --tenant ${{ secrets.AZURE_TENANT_ID_QA }}
           fi
 
            cp /home/github-selfhosted-runner/Dependency/scripts/*.sh . 
            ls -ltr
            sh deploy.sh
     
+
